@@ -16,8 +16,8 @@ import pprint
 
 # The cache dir is where we will store all of the temporary
 # data for CLIP
-CLIPDIR = 'clipcache'#os.path.dirname(__file__)
-print('USING CLIP DIR "{}"'.format(CLIPDIR))
+CLIPDIR = os.path.dirname(__file__)
+
 
 def print_progress(transferred_blocks, block_size, total_size):
     current_mb = transferred_blocks * block_size / 1024 / 1024
@@ -106,19 +106,3 @@ class ClipScore:
 
     def method(self):
         return "CLIPScore"
-
-
-def tmp_main():
-    with open('cached_gts.json') as f:
-        cached_gts = json.load(f)
-    with open('cached_res.json') as f:
-        cached_res = json.load(f)
-
-    cs = ClipScore()
-    clipscore, per_instance = cs.compute_score(cached_gts, cached_res)
-    pprint.pprint(clipscore)
-    pprint.pprint(per_instance[:3])
-
-
-if __name__ == '__main__':
-    tmp_main()
