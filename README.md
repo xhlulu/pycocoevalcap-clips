@@ -12,6 +12,7 @@ Caption evaluation depends on the COCO API that natively supports Python 3.
 ## Requirements ##
 - Java 1.8.0
 - Python 3
+- For CLIPScore, both pytorch and OpenAI's [CLIP](https://github.com/openai/CLIP) are required.
 
 ## Installation ##
 To install pycocoevalcap and the pycocotools dependency (https://github.com/cocodataset/cocoapi), run:
