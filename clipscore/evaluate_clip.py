@@ -94,14 +94,15 @@ def get_clip_score(model, images, candidates, device, w=2.5):
     candidates = sklearn.preprocessing.normalize(candidates, axis=1)
 
     per = w*np.clip(np.sum(images * candidates, axis=1), 0, None)
-    return np.mean(per), per
+    return np.mean(per), per, candidates
 
 
 def get_refonlyclipscore(model, references, candidates, device):
     '''
     The text only side for refclipscore
     '''
-    candidates = extract_all_captions(candidates, model, device)
+    if isinstance(candidates, list):
+        candidates = extract_all_captions(candidates, model, device)
 
     flattened_refs = []
     flattened_refs_idxs = []

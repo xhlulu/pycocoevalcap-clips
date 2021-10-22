@@ -89,12 +89,12 @@ class ClipScore:
         is_valid_clipscore = np.array(is_valid_clipscore)
 
         # get image-text clipscore
-        _, per_instance_image_text = get_clip_score(
+        _, per_instance_image_text, candidate_feats = get_clip_score(
             self.model, image_feats, [d['test'][0] for d in input_data], self.device)
 
         # get text-text clipscore
         _, per_instance_text_text = get_refonlyclipscore(
-            self.model, [d['refs'] for d in input_data], [d['test'][0] for d in input_data], self.device)
+            self.model, [d['refs'] for d in input_data], candidate_feats, self.device)
 
         # F-score
         refclipscores = 2 * per_instance_image_text * per_instance_text_text / (per_instance_image_text + per_instance_text_text)
