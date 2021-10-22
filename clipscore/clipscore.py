@@ -9,12 +9,15 @@ import ast
 import tempfile
 import clip
 import torch
+import evaluate_clip
 from zipfile import ZipFile
 from urllib.request import urlretrieve
+import pprint
 
 # The cache dir is where we will store all of the temporary
 # data for CLIP
-CLIPDIR = os.path.dirname(__file__)
+CLIPDIR = 'clipcache'#os.path.dirname(__file__)
+print('USING CLIP DIR "{}"'.format(CLIPDIR))
 
 def print_progress(transferred_blocks, block_size, total_size):
     current_mb = transferred_blocks * block_size / 1024 / 1024
@@ -23,7 +26,7 @@ def print_progress(transferred_blocks, block_size, total_size):
     progress_str = "Progress: {:5.1f}M / {:5.1f}M ({:6.1%})"
     print(progress_str.format(current_mb, total_mb, percent), end='\r')
 
-    
+
 class ClipScore:
     """
     Main Class to compute CLIPScore
@@ -33,6 +36,7 @@ class ClipScore:
     def __init__(self):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print('clipscore is using {}'.format(device))
+        self.device = device
         model, _ = clip.load("ViT-B/32", device=device, jit=False)
         model.eval()
         self.model = model
@@ -41,19 +45,23 @@ class ClipScore:
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
 
-        self.mscoco_feats_path = os.path.join(CLIPDIR, 'all_coco_captions_caption_features~ViT-B32.npy')
-        self.mscoco_id2row_path = os.path.join(CLIPDIR, 'all_coco_captions_caption_features~ViT-B32~cap2row.json')
+        self.mscoco_feats_path = os.path.join(CLIPDIR, 'mscoco_vitb_features/mscoco_image_features~ViT-B32.npy')
+        self.mscoco_id2row_path = os.path.join(CLIPDIR, 'mscoco_vitb_features/mscoco_image_features~ViT-B32~im2row.json')
         if not os.path.exists(self.mscoco_feats_path):
             url = 'https://storage.googleapis.com/ai2-jack-public/clipscore/mscoco_vitb_features.zip'
             zip_file, headers = urlretrieve(url, reporthook=print_progress)
-            for filef in ['all_coco_captions_caption_features~ViT-B32.npy', 'all_coco_captions_caption_features~ViT-B32~cap2row.json']:
+            for filef in ['mscoco_vitb_features/mscoco_image_features~ViT-B32~im2row.json', 'mscoco_vitb_features/mscoco_image_features~ViT-B32.npy']:
                 ZipFile(zip_file).extract(filef, CLIPDIR)
-        
+        assert os.path.exists(self.mscoco_feats_path), 'download error, {} doesnt exist!'.format(self.mscoco_feats_path)
+        assert os.path.exists(self.mscoco_id2row_path), 'download error, {} doesnt exist!'.format(self.mscoco_id2row_path)
+        self.mscoco_feats = np.load(self.mscoco_feats_path)
+        with open(self.mscoco_id2row_path) as f:
+            self.mscoco_feats_id2row = json.load(f)
 
     def compute_score(self, gts, res):
         assert(sorted(gts.keys()) == sorted(res.keys()))
         imgIds = sorted(gts.keys())
-        
+
         input_data = []
         for id in imgIds:
             hypo = res[id]
@@ -70,55 +78,35 @@ class ClipScore:
               "test" : hypo[0],
               "refs" : ref
             })
-        
 
-        cwd = os.path.dirname(os.path.abspath(__file__))
-        temp_dir=os.path.join(cwd, TEMP_DIR)
-        if not os.path.exists(temp_dir):
-          os.makedirs(temp_dir)
-        in_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir,
-                                              mode='w+')
-        json.dump(input_data, in_file, indent=2)
-        in_file.close()
+        is_valid_clipscore = []
+        image_feats = []
+        for d in input_data:
+            image_feats.append(self.mscoco_feats[self.mscoco_feats_id2row[str(d['image_id']).zfill(12)]])
 
-        # Start job
-        out_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir)
-        out_file.close()
-        cache_dir=os.path.join(cwd, CACHE_DIR)
-        if not os.path.exists(cache_dir):
-          os.makedirs(cache_dir)
-        spice_cmd = ['java', '-jar', '-Xmx8G', SPICE_JAR, in_file.name,
-          '-cache', cache_dir,
-          '-out', out_file.name,
-          '-subset',
-          '-silent'
-        ]
-        subprocess.check_call(spice_cmd, 
-            cwd=os.path.dirname(os.path.abspath(__file__)))
+        image_feats = np.vstack(image_feats)
+        is_valid_clipscore = np.array(is_valid_clipscore)
 
-        # Read and process results
-        with open(out_file.name) as data_file:    
-          results = json.load(data_file)
-        os.remove(in_file.name)
-        os.remove(out_file.name)
+        # get image-text clipscore
+        _, per_instance_image_text = evaluate_clip.get_clip_score(
+            self.model, image_feats, [d['test'][0] for d in input_data], self.device)
 
-        imgId_to_scores = {}
-        spice_scores = []
-        for item in results:
-          imgId_to_scores[item['image_id']] = item['scores']
-          spice_scores.append(self.float_convert(item['scores']['All']['f']))
-        average_score = np.mean(np.array(spice_scores))
-        scores = []
-        for image_id in imgIds:
-          # Convert none to NaN before saving scores over subcategories
-          score_set = {}
-          for category,score_tuple in imgId_to_scores[image_id].items():
-            score_set[category] = {k: self.float_convert(v) for k, v in score_tuple.items()}
-          scores.append(score_set)
-        return average_score, scores
+        # get text-text clipscore
+        _, per_instance_text_text = evaluate_clip.get_refonlyclipscore(
+            self.model, [d['refs'] for d in input_data], [d['test'][0] for d in input_data], self.device)
+
+        # F-score
+        refclipscores = 2 * per_instance_image_text * per_instance_text_text / (per_instance_image_text + per_instance_text_text)
+        # scores is a list of dictionaries
+        scores = [{'CLIPScore': clipscore, 'RefCLIPScore': refclipscore}
+                  for clipscore, refclipscore in zip(per_instance_image_text, refclipscores)]
+        # returns the reference-free version as a mean
+
+        return np.mean(per_instance_image_text), scores
 
     def method(self):
-        return "SPICE"
+        return "CLIPScore"
+
 
 def tmp_main():
     with open('cached_gts.json') as f:
@@ -127,8 +115,10 @@ def tmp_main():
         cached_res = json.load(f)
 
     cs = ClipScore()
-    cs.compute_score(cached_gts, cached_res)
-    
+    clipscore, per_instance = cs.compute_score(cached_gts, cached_res)
+    pprint.pprint(clipscore)
+    pprint.pprint(per_instance[:3])
+
 
 if __name__ == '__main__':
     tmp_main()
