@@ -44,7 +44,7 @@ class COCOEvalCap:
             (Rouge(), "ROUGE_L"),
             (Cider(), "CIDEr"),
             (Spice(), "SPICE"),
-            (ClipScore(), "CLIPScore")
+            (ClipScore(), ["CLIPScore", "RefCLIPScore"])
         ]
 
         # =================================================

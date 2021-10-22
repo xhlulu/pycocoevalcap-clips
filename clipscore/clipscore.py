@@ -9,7 +9,7 @@ import ast
 import tempfile
 import clip
 import torch
-import evaluate_clip
+from .evaluate_clip import get_clip_score, get_refonlyclipscore
 from zipfile import ZipFile
 from urllib.request import urlretrieve
 import pprint
@@ -48,6 +48,7 @@ class ClipScore:
         self.mscoco_feats_path = os.path.join(CLIPDIR, 'mscoco_vitb_features/mscoco_image_features~ViT-B32.npy')
         self.mscoco_id2row_path = os.path.join(CLIPDIR, 'mscoco_vitb_features/mscoco_image_features~ViT-B32~im2row.json')
         if not os.path.exists(self.mscoco_feats_path):
+            print('Downloading MSCOCO image features for CLIPScore ...')
             url = 'https://storage.googleapis.com/ai2-jack-public/clipscore/mscoco_vitb_features.zip'
             zip_file, headers = urlretrieve(url, reporthook=print_progress)
             for filef in ['mscoco_vitb_features/mscoco_image_features~ViT-B32~im2row.json', 'mscoco_vitb_features/mscoco_image_features~ViT-B32.npy']:
@@ -88,11 +89,11 @@ class ClipScore:
         is_valid_clipscore = np.array(is_valid_clipscore)
 
         # get image-text clipscore
-        _, per_instance_image_text = evaluate_clip.get_clip_score(
+        _, per_instance_image_text = get_clip_score(
             self.model, image_feats, [d['test'][0] for d in input_data], self.device)
 
         # get text-text clipscore
-        _, per_instance_text_text = evaluate_clip.get_refonlyclipscore(
+        _, per_instance_text_text = get_refonlyclipscore(
             self.model, [d['refs'] for d in input_data], [d['test'][0] for d in input_data], self.device)
 
         # F-score
@@ -102,7 +103,7 @@ class ClipScore:
                   for clipscore, refclipscore in zip(per_instance_image_text, refclipscores)]
         # returns the reference-free version as a mean
 
-        return np.mean(per_instance_image_text), scores
+        return [np.mean(per_instance_image_text), np.mean(refclipscores)], scores
 
     def method(self):
         return "CLIPScore"
