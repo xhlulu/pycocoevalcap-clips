@@ -1,4 +1,5 @@
 import clip
+import torch
 from PIL import Image
 from sklearn.preprocessing import normalize
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
@@ -59,7 +60,7 @@ def extract_all_captions(captions, model, preprocess, args, batch_size=256, num_
     return all_text_features
 
 
-def extract_all_images(images, model, preprocess, args, batch_size=64, num_workers):
+def extract_all_images(images, model, preprocess, args, batch_size=64, num_workers=8):
     data = torch.utils.data.DataLoader(
         CLIPImageDataset(images, args),
         batch_size=batch_size, num_workers=num_workers, shuffle=False)
