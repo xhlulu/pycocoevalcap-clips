@@ -5,6 +5,7 @@ from .meteor.meteor import Meteor
 from .rouge.rouge import Rouge
 from .cider.cider import Cider
 from .spice.spice import Spice
+from .clipscore.clipscore import ClipScore
 
 
 class COCOEvalCap:
@@ -42,7 +43,8 @@ class COCOEvalCap:
             (Meteor(),"METEOR"),
             (Rouge(), "ROUGE_L"),
             (Cider(), "CIDEr"),
-            (Spice(), "SPICE")
+            (Spice(), "SPICE"),
+            (ClipScore(), ["CLIPScore", "RefCLIPScore"])
         ]
 
         # =================================================
