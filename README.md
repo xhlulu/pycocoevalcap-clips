@@ -31,6 +31,7 @@ See the example script: [example/coco_eval_example.py](example/coco_eval_example
 - rouge: Rouge-L evaluation codes
 - cider: CIDEr evaluation codes
 - spice: SPICE evaluation codes
+- clipscore: CLIPScore evaluation codes
 
 ## Setup ##
 
@@ -46,6 +47,7 @@ See the example script: [example/coco_eval_example.py](example/coco_eval_example
 - Rouge-L: [ROUGE: A Package for Automatic Evaluation of Summaries](http://anthology.aclweb.org/W/W04/W04-1013.pdf)
 - CIDEr: [CIDEr: Consensus-based Image Description Evaluation](http://arxiv.org/pdf/1411.5726.pdf)
 - SPICE: [SPICE: Semantic Propositional Image Caption Evaluation](https://arxiv.org/abs/1607.08822)
+- CLIPScore: [CLIPScore: A Reference-free Evaluation Metric for Image Captioning](https://arxiv.org/abs/2104.08718)
 
 ## Developers ##
 - Xinlei Chen (CMU)
