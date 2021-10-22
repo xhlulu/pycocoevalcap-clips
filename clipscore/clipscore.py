@@ -83,7 +83,13 @@ class ClipScore:
         is_valid_clipscore = []
         image_feats = []
         for d in input_data:
-            image_feats.append(self.mscoco_feats[self.mscoco_feats_id2row[str(d['image_id']).zfill(12)]])
+            try:
+                image_feats.append(self.mscoco_feats[self.mscoco_feats_id2row[str(d['image_id']).zfill(12)]])
+            except:
+                raise NotImplementedError(
+                    'image ID "{}" not found in MSCOCO. If you\'re trying to run CLIPScore on a dataset that is not MSCOCO, '
+                    'please consider using the command line utility here: https://github.com/jmhessel/clipscore'.format(
+                        d['image_id']))
 
         image_feats = np.vstack(image_feats)
         is_valid_clipscore = np.array(is_valid_clipscore)
