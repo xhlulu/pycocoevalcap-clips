@@ -13,7 +13,6 @@ from .evaluate_clip import get_clip_score, get_refonlyclipscore
 from zipfile import ZipFile
 from urllib.request import urlretrieve
 import pprint
-import warnings
 
 # The cache dir is where we will store all of the temporary
 # data for CLIP
@@ -39,10 +38,9 @@ class ClipScore:
         print('clipscore is using {}'.format(device))
         self.device = device
         if device == 'cpu':
-            warnings.warn(
-                'CLIP runs in full float32 on CPU. Results in CLIPScore paper were computed on GPU, which uses float16. '
-                'If you\'re reporting results on CPU, please note this when you report, though differences should be small. '
-                'To run in the GPU setting, please check out https://github.com/jmhessel/clipscore')
+            print('CLIP runs in full float32 on CPU. Results in CLIPScore paper were computed on GPU, which uses float16. '
+                  'If you\'re reporting results on CPU, please note this when you report, though differences should be small. '
+                  'To run in the GPU setting, please check out https://github.com/jmhessel/clipscore')
         model, _ = clip.load("ViT-B/32", device=device, jit=False)
         model.eval()
         self.model = model
