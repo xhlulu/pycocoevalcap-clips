@@ -13,6 +13,7 @@ from .evaluate_clip import get_clip_score, get_refonlyclipscore
 from zipfile import ZipFile
 from urllib.request import urlretrieve
 import pprint
+import warnings
 
 # The cache dir is where we will store all of the temporary
 # data for CLIP
