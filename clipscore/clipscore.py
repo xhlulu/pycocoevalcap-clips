@@ -37,6 +37,11 @@ class ClipScore:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print('clipscore is using {}'.format(device))
         self.device = device
+        if device == 'cpu':
+            warnings.warn(
+                'CLIP runs in full float32 on CPU. Results in CLIPScore paper were computed on GPU, which uses float16. '
+                'If you\'re reporting results on CPU, please note this when you report, though differences should be small. '
+                'To run in the GPU setting, please check out https://github.com/jmhessel/clipscore')
         model, _ = clip.load("ViT-B/32", device=device, jit=False)
         model.eval()
         self.model = model
@@ -107,7 +112,6 @@ class ClipScore:
         # scores is a list of dictionaries
         scores = [{'CLIPScore': clipscore, 'RefCLIPScore': refclipscore}
                   for clipscore, refclipscore in zip(per_instance_image_text, refclipscores)]
-        # returns the reference-free version as a mean
 
         return [np.mean(per_instance_image_text), np.mean(refclipscores)], scores
 
