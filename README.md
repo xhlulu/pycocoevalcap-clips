@@ -60,3 +60,4 @@ See the example script: [example/coco_eval_example.py](example/coco_eval_example
 - David Chiang (University of Norte Dame)
 - Michael Denkowski (CMU)
 - Alexander Rush (Harvard University)
+- Jungo Kasai (UW): for helping to squash a bug with the CLIPScore implementation
