@@ -96,7 +96,7 @@ def get_clip_score(model, images, candidates, device, w=2.5):
         images = sklearn.preprocessing.normalize(images, axis=1)
         candidates = sklearn.preprocessing.normalize(candidates, axis=1)
     else:
-        warnings.warn(
+        print(
             'due to a numerical instability, new numpy normalization is slightly different than paper results. '
             'to exactly replicate paper results, please use numpy version less than 1.21, e.g., 1.20.3.')
         images = images / np.sqrt(np.sum(images**2, axis=1, keepdims=True))
@@ -125,7 +125,7 @@ def get_refonlyclipscore(model, references, candidates, device):
         candidates = sklearn.preprocessing.normalize(candidates, axis=1)
         flattened_refs = sklearn.preprocessing.normalize(flattened_refs, axis=1)
     else:
-        warnings.warn(
+        print(
             'due to a numerical instability, new numpy normalization is slightly different than paper results. '
             'to exactly replicate paper results, please use numpy version less than 1.21, e.g., 1.20.3.')
 
