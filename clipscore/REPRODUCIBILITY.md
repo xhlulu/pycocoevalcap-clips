@@ -38,7 +38,7 @@ print(per_caption_scores)
 
 for float16 GPU, the output expected for this case is:
 ```
-[{'CLIPScore': 0.548, 'RefCLIPScore': 0.581}]
+[{'CLIPScore': 0.5474, 'RefCLIPScore': 0.5806}]
 ```
 
 for float32 CPU (the unofficial run setting, please use GPU if possible!):
