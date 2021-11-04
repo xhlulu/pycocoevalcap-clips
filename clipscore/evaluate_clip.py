@@ -8,6 +8,7 @@ import tqdm
 import numpy as np
 import sklearn.preprocessing
 import collections
+from packaging import version
 
 
 class CLIPCapDataset(torch.utils.data.Dataset):
