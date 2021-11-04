@@ -100,7 +100,7 @@ class ClipScore:
 
         # get image-text clipscore
         _, per_instance_image_text, candidate_feats = get_clip_score(
-            self.model, image_feats, [d['test'][0] for d in input_data], self.device)
+            self.model, image_feats, [d['test'] for d in input_data], self.device)
 
         # get text-text clipscore
         _, per_instance_text_text = get_refonlyclipscore(
