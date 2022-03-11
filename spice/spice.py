@@ -29,7 +29,7 @@ class Spice:
         except:
           return np.nan
 
-    def compute_score(self, gts, res):
+    def compute_score(self, gts, res, memory=8):
         assert(sorted(gts.keys()) == sorted(res.keys()))
         imgIds = sorted(gts.keys())
         
@@ -66,7 +66,7 @@ class Spice:
         cache_dir=os.path.join(cwd, CACHE_DIR)
         if not os.path.exists(cache_dir):
           os.makedirs(cache_dir)
-        spice_cmd = ['java', '-jar', '-Xmx32G', SPICE_JAR, in_file.name,
+        spice_cmd = ['java', '-jar', f'-Xmx{memory}G', SPICE_JAR, in_file.name,
           '-cache', cache_dir,
           '-out', out_file.name,
           '-subset',
