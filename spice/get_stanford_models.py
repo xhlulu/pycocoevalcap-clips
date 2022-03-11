@@ -18,25 +18,25 @@ def print_progress(transferred_blocks, block_size, total_size):
     print(progress_str.format(current_mb, total_mb, percent), end='\r')
 
 
-def get_stanford_models():
-    jar_name = os.path.join(SPICEDIR, SPICELIB, '{}.jar'.format(JAR))
+def get_stanford_models(spicedir=SPICEDIR, spicelib=SPICELIB, jar=JAR, corenlp=CORENLP):
+    jar_name = os.path.join(spicedir, spicelib, '{}.jar'.format(jar))
     # Only download file if file does not yet exist. Else: do nothing
     if not os.path.exists(jar_name):
-        print('Downloading {} for SPICE ...'.format(JAR))
-        url = 'http://nlp.stanford.edu/software/{}.zip'.format(CORENLP)
+        print('Downloading {} for SPICE ...'.format(jar))
+        url = 'http://nlp.stanford.edu/software/{}.zip'.format(corenlp)
         zip_file, headers = urlretrieve(url, reporthook=print_progress)
         print()
-        print('Extracting {} ...'.format(JAR))
-        file_name = os.path.join(CORENLP, JAR)
+        print('Extracting {} ...'.format(jar))
+        file_name = os.path.join(corenlp, jar)
         # file names in zip use '/' separator regardless of OS
-        zip_file_name = '/'.join([CORENLP, JAR])
-        target_name = os.path.join(SPICEDIR, SPICELIB, JAR)
+        zip_file_name = '/'.join([corenlp, jar])
+        target_name = os.path.join(spicedir, spicelib, jar)
         for filef in ['{}.jar', '{}-models.jar']:
-            ZipFile(zip_file).extract(filef.format(zip_file_name), SPICEDIR)
-            os.rename(os.path.join(SPICEDIR, filef.format(file_name)),
+            ZipFile(zip_file).extract(filef.format(zip_file_name), spicedir)
+            os.rename(os.path.join(spicedir, filef.format(file_name)),
                       filef.format(target_name))
 
-        os.rmdir(os.path.join(SPICEDIR, CORENLP))
+        os.rmdir(os.path.join(spicedir, corenlp))
         os.remove(zip_file)
         print('Done.')
 
